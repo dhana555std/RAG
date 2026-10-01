@@ -166,4 +166,4 @@ Check network access on the first run. Hugging Face models are downloaded and ca
 
 ## License
 
-Add the license that applies to your project before distributing it.
+MIT
