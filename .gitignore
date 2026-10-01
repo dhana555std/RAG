@@ -1,0 +1,47 @@
+data
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# Generated vector database
+data/chroma_db/
+chroma_db/
+
+# Optional local model/cache directories
+.cache/
+.cache_huggingface/
+.cache_torch/
