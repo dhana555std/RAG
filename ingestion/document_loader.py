@@ -74,7 +74,7 @@ if not SOURCE_DIR.is_absolute():
 
 # Only these file formats will be processed.
 SUPPORTED_EXTENSIONS = {
-    ".doc",
+    #".doc",
     ".docx",
     ".pdf"
 }
@@ -82,6 +82,11 @@ SUPPORTED_EXTENSIONS = {
 # LibreOffice executable configuration.
 # The environment variable takes precedence.
 LIBREOFFICE_PATH = os.getenv("LIBREOFFICE_PATH")
+
+def to_doc_id(file_path: Path) -> str:
+    """The file's 'shelf label': its path inside SOURCE_DIR, e.g. 'hr/leave.pdf'."""
+    return file_path.resolve().relative_to(SOURCE_DIR.resolve()).as_posix()
+
 
 # ---------------------------------------------------------
 # COMMON METADATA EXTRACTION
@@ -105,6 +110,7 @@ def get_file_metadata(file_path: Path) -> dict:
 
     return {
         "source": str(file_path.resolve()),
+        "doc_id": to_doc_id(file_path),
         "file_name": file_path.name,
         "file_type": file_path.suffix.lower().replace(".", ""),
         "file_size_bytes": stat.st_size,
@@ -447,3 +453,27 @@ def load_documents() -> list[Document]:
     )
 
     return documents
+
+
+# ---------------------------------------------------------
+# SINGLE-FILE HELPERS (Solution 1)
+# ---------------------------------------------------------
+
+def list_source_files() -> list[Path]:
+    """All files in SOURCE_DIR, skipping hidden files and Word's ~$ lock files."""
+    if not SOURCE_DIR.exists():
+        raise FileNotFoundError(f"Source directory does not exist: {SOURCE_DIR}")
+    return sorted(
+        p for p in SOURCE_DIR.rglob("*")
+        if p.is_file() and not p.name.startswith(("~$", "."))
+    )
+
+
+def load_file(file_path: Path) -> list[Document]:
+    """Load ONE file with the right loader."""
+    extension = file_path.suffix.lower()
+    if extension == ".pdf":
+        return load_pdf(file_path)
+    if extension == ".docx":
+        return load_docx(file_path)
+    raise ValueError(f"Unsupported file type: {extension}")

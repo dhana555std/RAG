@@ -14,8 +14,8 @@ An existing collection created with L2 distance must be deleted and
 re-created before cosine distance can be used.
 """
 
-import hashlib
 import os
+from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional
 
@@ -80,6 +80,7 @@ def get_embedding_function() -> HuggingFaceEmbeddings:
 # Vector store initialization
 # ---------------------------------------------------------------------
 
+@lru_cache(maxsize=1)
 def get_vector_store() -> Chroma:
     """
     Initialize and return the persistent ChromaDB vector store.
@@ -132,25 +133,11 @@ def get_vector_store() -> Chroma:
 
 def generate_document_id(document: Document) -> str:
     """
-    Generate a stable SHA256 ID for a document chunk.
-
-    The ID is based on the source, chunk position and content.
+    Readable, stable ID for a chunk: '<doc_id>::<chunk number>',
+    e.g. 'hr/leave.pdf::3'. doc_id comes from document_loader.py.
     """
 
-    source = document.metadata.get("source", "")
-
-    start_index = document.metadata.get(
-        "start_index",
-        ""
-    )
-
-    unique_content = (
-        f"{source}|{start_index}|{document.page_content}"
-    )
-
-    return hashlib.sha256(
-        unique_content.encode("utf-8")
-    ).hexdigest()
+    return f"{document.metadata['doc_id']}::{document.metadata['chunk_id']}"
 
 
 def store_chunks(
@@ -204,3 +191,17 @@ def get_collection_count() -> int:
 
     return vector_store._collection.count()
 
+
+def get_ingested_doc_ids() -> dict:
+    """Which files are already in ChromaDB: {doc_id: number_of_chunks}."""
+
+    records = get_vector_store().get(include=["metadatas"])
+
+    counts = {}
+
+    for metadata in records["metadatas"]:
+        doc_id = (metadata or {}).get("doc_id")
+        if doc_id:
+            counts[doc_id] = counts.get(doc_id, 0) + 1
+
+    return counts
