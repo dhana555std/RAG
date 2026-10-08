@@ -17,3 +17,6 @@ fonttools
 
 sentence-transformers
 
+
+fastapi
+uvicorn
