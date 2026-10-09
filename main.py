@@ -209,21 +209,12 @@ def run_rag_pipeline() -> None:
 
 def main() -> None:
     """
-    Execute the complete RAG application.
+    Start interactive question answering.
 
-    Question answering starts only after successful ingestion.
+    Documents are no longer loaded here. Use POST /ingest/initial (app.py).
     """
 
-    ingestion_completed = run_ingestion()
-
-    if ingestion_completed:
-        run_rag_pipeline()
-
-    else:
-        print(
-            "\nRAG pipeline skipped because ingestion "
-            "was not completed successfully."
-        )
+    run_rag_pipeline()
 
 
 if __name__ == "__main__":
